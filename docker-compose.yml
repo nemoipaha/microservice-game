@@ -42,6 +42,7 @@ services:
             - 8080:80
             - 9090:9090
 
+    # battle microservice
     source_battle:
         image: nginx:stable
         volumes:
