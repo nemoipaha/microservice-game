@@ -15,7 +15,10 @@ services:
         dns:
             - 127.0.0.1
 
-    microservice_base_fpm:
+    ##
+    # Battle Microservice
+    ##
+    microservice_battle_fpm:
         build: ./microservices/base/php-fpm/
         working_dir: /var/www/html
         volumes_from:
@@ -28,7 +31,7 @@ services:
             - BACKEND=microservice_base_nginx
             - CONSUL=autodiscovery
 
-    microservice_base_nginx:
+    microservice_battle_nginx:
         build: ./microservices/base/nginx/
         volumes_from:
             - source_battle
@@ -42,7 +45,6 @@ services:
             - 8080:80
             - 9090:9090
 
-    # battle microservice
     source_battle:
         image: nginx:stable
         volumes:
