@@ -37,7 +37,7 @@ services:
             - source_battle
         links:
             - autodiscovery
-            - microservice_base_fpm
+            - microservice_battle_fpm
         environment:
             - BACKEND=microservice_base_fpm
             - CONSUL=autodiscovery
