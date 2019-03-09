@@ -17,6 +17,9 @@ services:
 
     microservice_base_fpm:
         build: ./microservices/base/php-fpm/
+        working_dir: /var/www/html
+        volumes_from:
+            - source_battle
         links:
             - autodiscovery
         expose:
@@ -27,6 +30,8 @@ services:
 
     microservice_base_nginx:
         build: ./microservices/base/nginx/
+        volumes_from:
+            - source_battle
         links:
             - autodiscovery
             - microservice_base_fpm
@@ -36,3 +41,8 @@ services:
         ports:
             - 8080:80
             - 9090:9090
+
+    source_battle:
+        image: nginx:stable
+        volumes:
+            - ./source/battle:/var/www/html
