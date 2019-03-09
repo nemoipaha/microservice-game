@@ -4,7 +4,7 @@
     "logging": {"level": "DEBUG"},
     "services": [
         {
-            "name": "microservice_battle_nginx",
+            "name": "microservice_user_nginx",
             "port": 80,
             "health": "/usr/bin/curl --fail --silent --show-error --output /dev/null http://localhost/nginx-health",
             "poll": 10,
@@ -12,7 +12,7 @@
             "interfaces": ["eth0"]
         },
         {
-            "name": "microservice_battle_nginx-public",
+            "name": "microservice_user_nginx-public",
             "port": 80,
             "health": "/usr/bin/curl --fail --silent --show-error --output /dev/null http://localhost/nginx-health",
             "poll": 10,

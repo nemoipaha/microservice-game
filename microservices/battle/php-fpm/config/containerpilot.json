@@ -4,7 +4,7 @@
     "logging": {"level": "DEBUG"},
     "services": [
         {
-            "name": "microservice_base_fpm",
+            "name": "microservice_battle_fpm",
             "port": 80,
             "health": "/usr/local/sbin/php-fpm -t",
             "poll": 10,
