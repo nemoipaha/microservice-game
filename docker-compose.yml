@@ -19,7 +19,7 @@ services:
     # Battle Microservice
     ##
     microservice_battle_fpm:
-        build: ./microservices/base/php-fpm/
+        build: ./microservices/battle/php-fpm/
         working_dir: /var/www/html
         volumes_from:
             - source_battle
@@ -28,25 +28,61 @@ services:
         expose:
             - 9000
         environment:
-            - BACKEND=microservice_base_nginx
+            - BACKEND=microservice_battle_nginx
             - CONSUL=autodiscovery
 
     microservice_battle_nginx:
-        build: ./microservices/base/nginx/
+        build: ./microservices/battle/nginx/
         volumes_from:
             - source_battle
         links:
             - autodiscovery
             - microservice_battle_fpm
         environment:
-            - BACKEND=microservice_base_fpm
+            - BACKEND=microservice_battle_fpm
             - CONSUL=autodiscovery
         ports:
-            - 8080:80
-            - 9090:9090
+            - 8081:80
+            - 9091:9090
 
     source_battle:
         image: nginx:stable
         volumes:
             - ./source/battle:/var/www/html
+        command: "true"
+
+    ##
+    # User Microservice
+    ##
+    microservice_user_fpm:
+        build: ./microservices/user/php-fpm/
+        working_dir: /var/www/html
+        volumes_from:
+            - source_user
+        links:
+            - autodiscovery
+        expose:
+            - 9000
+        environment:
+            - BACKEND=microservice_user_nginx
+            - CONSUL=autodiscovery
+
+    microservice_user_nginx:
+        build: ./microservices/user/nginx/
+        volumes_from:
+            - source_user
+        links:
+            - autodiscovery
+            - microservice_user_fpm
+        environment:
+            - BACKEND=microservice_user_fpm
+            - CONSUL=autodiscovery
+        ports:
+            - 8082:80
+            - 9092:9090
+
+    source_user:
+        image: nginx:stable
+        volumes:
+            - ./source/user:/var/www/html
         command: "true"
