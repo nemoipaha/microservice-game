@@ -25,6 +25,7 @@ services:
             - source_battle
         links:
             - autodiscovery
+            - microservice_user_nginx
         expose:
             - 9000
         environment:
@@ -39,7 +40,7 @@ services:
             - autodiscovery
             - microservice_battle_fpm
         environment:
-            - BACKEND=microservice_battle_fpm
+            - BACKEND=microservice-battle-fpm
             - CONSUL=autodiscovery
         ports:
             - 8081:80
@@ -64,7 +65,7 @@ services:
         expose:
             - 9000
         environment:
-            - BACKEND=microservice_user_nginx
+            - BACKEND=microservice-user-nginx
             - CONSUL=autodiscovery
 
     microservice_user_nginx:
