@@ -29,7 +29,7 @@ services:
         expose:
             - 9000
         environment:
-            - BACKEND=microservice-battle-nginx
+            - BACKEND=microservice_battle_nginx
             - CONSUL=autodiscovery
 
     microservice_battle_nginx:
@@ -40,7 +40,7 @@ services:
             - autodiscovery
             - microservice_battle_fpm
         environment:
-            - BACKEND=microservice-battle-fpm
+            - BACKEND=microservice_battle_fpm
             - CONSUL=autodiscovery
         ports:
             - 8081:80
@@ -65,7 +65,7 @@ services:
         expose:
             - 9000
         environment:
-            - BACKEND=microservice-user-nginx
+            - BACKEND=microservice_user_nginx
             - CONSUL=autodiscovery
 
     microservice_user_nginx:
@@ -76,7 +76,7 @@ services:
             - autodiscovery
             - microservice_user_fpm
         environment:
-            - BACKEND=microservice-user-fpm
+            - BACKEND=microservice_user_fpm
             - CONSUL=autodiscovery
         ports:
             - 8082:80

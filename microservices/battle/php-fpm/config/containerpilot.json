@@ -5,11 +5,11 @@
     "services": [
         {
             "name": "microservice_battle_fpm",
-            "port": 80,
+            "port": 9000,
             "health": "/usr/local/sbin/php-fpm -t",
             "poll": 10,
             "ttl": 25,
-            "interfaces": ["eth1", "eth0"]
+            "interfaces": ["eth0"]
         }
     ],
     "backends": [
