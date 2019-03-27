@@ -16,7 +16,7 @@ final class LocationController
 
     public function getDistance(array $pointA, array $pointB, string $unit = self::KM): float
     {
-        return $this->getEuclideanDistance($pointA, $pointB, $unit);
+        return $this->getHaversineDistance($pointA, $pointB, $unit);
     }
 
     private function convertDistance(float $distance, string $unit = self::KM): float
@@ -33,11 +33,18 @@ final class LocationController
         return round($distance, self::ROUND_DECIMALS);
     }
 
-    private function getEuclideanDistance(array $pointA, array $pointB, string $unit = self::KM): float
+    private function getHaversineDistance(array $pointA, array $pointB, string $unit = self::KM): float
     {
-        $distance = sqrt(
-            pow(abs($pointA['latitude'] - $pointB['latitude']), 2) + pow(abs($pointA['longitude'] - $pointB['longitude']), 2)
-        );
+        $distance = rad2deg(
+            acos(
+                sin(deg2rad($pointA['latitude'])) * sin(deg2rad($pointB['latitude']))
+                + (
+                    cos(deg2rad($pointA['latitude']))
+                    * cos(deg2rad($pointB['latitude']))
+                    * cos(deg2rad($pointA['longitude'] - $pointB['longitude']))
+                )
+            )
+        ) * 60;
 
         return $this->convertDistance($distance, $unit);
     }

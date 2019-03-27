@@ -28,8 +28,8 @@ final class LocationControllerTest extends \TestCase
         $this->assertEquals(self::DISTANCE_LONDON_AMSTERDAM, $distance);
     }
 
-    public function testClosestSecrets()
-    {
-
-    }
+//    public function testClosestSecrets()
+//    {
+//
+//    }
 }
