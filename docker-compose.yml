@@ -123,3 +123,39 @@ services:
         volumes:
             - ./source/location:/var/www/html
         command: "true"
+
+    ##
+    # Secret Microservice
+    ##
+    microservice_secret_fpm:
+        build: ./microservices/secret/php-fpm/
+        working_dir: /var/www/html
+        volumes_from:
+            - source_secret
+        links:
+            - autodiscovery
+        expose:
+            - 9000
+        environment:
+            - BACKEND=microservice_secret_nginx
+            - CONSUL=autodiscovery
+
+    microservice_secret_nginx:
+        build: ./microservices/secret/nginx/
+        volumes_from:
+            - source_secret
+        links:
+            - autodiscovery
+            - microservice_secret_fpm
+        environment:
+            - BACKEND=microservice_secret_fpm
+            - CONSUL=autodiscovery
+        ports:
+            - 8084:80
+            - 9094:9090
+
+    source_secret:
+        image: nginx:stable
+        volumes:
+            - ./source/secret:/var/www/html
+        command: "true"
