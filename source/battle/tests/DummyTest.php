@@ -8,7 +8,7 @@ class DummyTest extends \TestCase
 {
     public function testFailAssertArrayHasKey()
     {
-        $this->assertArrayHasKey('foo', Dummy::getConfigArray());
+        $this->assertArrayNotHasKey('foo', Dummy::getConfigArray());
     }
 
     public function testPassAssertArrayHasKey()
