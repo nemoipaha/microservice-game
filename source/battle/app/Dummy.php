@@ -2,8 +2,17 @@
 
 namespace App;
 
-class Dummy
+final class Dummy
 {
+    public $foo;
+
+    public static $locales = [
+        'en_GB',
+        'en_US',
+        'es_ES',
+        'gl_ES'
+    ];
+
     public static function getConfigArray(): array
     {
         return [
@@ -15,5 +24,10 @@ class Dummy
                 'pass' => 'my-secret-password'
             ]
         ];
+    }
+
+    public static function getRandomCode(): string
+    {
+        return 'CODE-123A';
     }
 }
