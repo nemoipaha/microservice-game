@@ -4,7 +4,7 @@ namespace App\Tests;
 
 use App\Dummy;
 
-class DummyTest extends \TestCase
+final class DummyTest extends \TestCase
 {
     public function testFailAssertArrayHasKey()
     {
