@@ -14,11 +14,5 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton(
-            Client::class,
-            static function () {
-                return new Client(['verify' => false]);
-            }
-        );
     }
 }
