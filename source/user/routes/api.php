@@ -8,6 +8,7 @@ use Laravel\Lumen\Routing\Router;
 
 $router->group([
     'prefix' => 'api/v1',
+    'middleware' => 'has_api_key'
 ], function(Router $router) {
     $router->get('/users', 'UserController@getUsersCollection');
     $router->get('/users/{id}', 'UserController@getSingleUser');
