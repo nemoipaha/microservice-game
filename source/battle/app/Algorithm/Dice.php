@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace App\Algorithm;
+
 final class Dice
 {
     public const TOTAL_ROUNDS = 3;
