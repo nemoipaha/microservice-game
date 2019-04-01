@@ -9,6 +9,17 @@ use Illuminate\Http\Request;
 
 final class UserController extends Controller
 {
+    private $users = [
+        1 => [
+            'name' => 'John',
+            'city' => 'Barcelona'
+        ],
+        2 => [
+            'name' => 'Joe',
+            'city' => 'Paris'
+        ]
+    ];
+
     public function getUsersCollection(Request $request): JsonResponse
     {
         return response()->json([
@@ -18,10 +29,7 @@ final class UserController extends Controller
 
     public function getSingleUser(string $id, Request $request): JsonResponse
     {
-        return response()->json([
-            'method' => 'index',
-            'id' => $id
-        ]);
+        return response()->json($this->users[$id]);
     }
 
     public function addUser(Request $request): JsonResponse
