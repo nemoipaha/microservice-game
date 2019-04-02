@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Entity\BaseModel;
 use App\Entity\Secret;
 use App\Http\Transformer\SecretTransformer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use League\Fractal\Manager;
 use League\Fractal\Resource\Collection as FractalCollection;
+use League\Fractal\Resource\Item;
 use League\Fractal\TransformerAbstract;
 
 final class SecretController extends Controller
@@ -37,5 +40,27 @@ final class SecretController extends Controller
         $data = $this->manager->createData($data)->toArray();
 
         return response()->json($data);
+    }
+
+    private function createItemResponse(BaseModel $model, TransformerAbstract $transformer): JsonResponse
+    {
+        $data = new Item($model, $transformer);
+        $data = $this->manager->createData($data)->toArray();
+
+        return response()->json($data);
+    }
+
+    public function newSecret(Request $request): JsonResponse
+    {
+        $this->validate($request, [
+            'name' => 'required|string|unique:secrets,name',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'location_name' => 'required|string'
+        ]);
+
+        $secret = Secret::query()->create(array_merge($request->all(), ['id' => Str::uuid()]));
+
+        return $this->createItemResponse($secret, $this->secretTransformer);
     }
 }
