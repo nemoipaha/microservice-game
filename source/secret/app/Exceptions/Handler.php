@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use App\Http\Response\ApiResponse;
 use Exception;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -45,6 +46,10 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
+        if ($exception instanceof ValidationException) {
+            return ApiResponse::error($exception->validator->errors()->first());
+        }
+
         return parent::render($request, $exception);
     }
 }
