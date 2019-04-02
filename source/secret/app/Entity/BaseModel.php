@@ -18,7 +18,8 @@ abstract class BaseModel extends Model
     public function setAttribute($key, $value)
     {
         if ($key === $this->getKeyName()) {
-            $this->assertIdFormat((string)$value);
+            $value = (string)$value;
+            $this->assertIdFormat($value);
         }
 
         parent::setAttribute($key, $value);
