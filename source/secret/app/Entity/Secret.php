@@ -1,22 +1,19 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace App\Entity;
-
-use Illuminate\Database\Eloquent\Model;
-use Ramsey\Uuid\UuidInterface;
 
 /**
  * Class Secret
  * @package App\Entity
  * @property string $id
  * @property string $name
- * @property string $latitude
- * @property string $longitude
+ * @property float $latitude
+ * @property float $longitude
  * @property string $location_name
  */
-final class Secret extends Model
+final class Secret extends BaseModel
 {
     protected $table = 'secrets';
 
@@ -28,35 +25,43 @@ final class Secret extends Model
         'location_name'
     ];
 
-    public function setId(UuidInterface $uuid): void
-    {
-        $this->id = $uuid->toString();
-    }
-
     public function changeName(string $name): void
     {
         $this->assertAttributeIsNotEmpty($name);
 
-        $this->name = $name;
+        $this->setAttribute('name', $name);
     }
 
     public function changeLocation(float $latitude, float $longitude): void
     {
-        $this->latitude = $latitude;
-        $this->longitude = $longitude;
+        $this->setAttribute('latitude', $latitude);
+        $this->setAttribute('longitude', $longitude);
     }
 
     public function changeLocationName(string $locationName): void
     {
         $this->assertAttributeIsNotEmpty($locationName);
 
-        $this->longitude = $locationName;
+        $this->setAttribute('location_name', $locationName);
     }
 
-    private function assertAttributeIsNotEmpty(string $value): void
+    public function getName(): string
     {
-        if (empty($value)) {
-            throw new \InvalidArgumentException('Empty entity attribute.');
-        }
+        return $this->getAttribute('name');
+    }
+
+    public function getLatitude(): float
+    {
+        return $this->getAttribute('latitude');
+    }
+
+    public function getLongitude(): float
+    {
+        return $this->getAttribute('longitude');
+    }
+
+    public function getLocationName(): string
+    {
+        return $this->getAttribute('location_name');
     }
 }
