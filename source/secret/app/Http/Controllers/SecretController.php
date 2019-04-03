@@ -34,6 +34,13 @@ final class SecretController extends Controller
         return $this->createCollectionResponse($data, $this->secretTransformer);
     }
 
+    public function getSecretById(string $id): JsonResponse
+    {
+        $secret = Secret::query()->find($id);
+
+        return $this->createItemResponse($secret, $this->secretTransformer);
+    }
+
     private function createCollectionResponse(Collection $collection, TransformerAbstract $transformer): JsonResponse
     {
         $data = new FractalCollection($collection->all(), $transformer);

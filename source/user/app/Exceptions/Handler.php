@@ -3,7 +3,11 @@
 namespace App\Exceptions;
 
 use Exception;
+use GuzzleHttp\Exception\BadResponseException;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\ServerException;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -46,6 +50,24 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
+        if ($exception instanceof ConnectException || $exception instanceof ServerException) {
+            return response()->json([
+                'errors' => [
+                    'code' => 'connection_error',
+                    'message' => 'Server responded with an error.'
+                ]
+            ], Response::HTTP_SERVICE_UNAVAILABLE);
+        }
+
+        if ($exception instanceof BadResponseException) {
+            return response()->json([
+                'errors' => [
+                    'code' => 'invalid_request',
+                    'message' => $exception->getMessage()
+                ]
+            ], $exception->getResponse()->getStatusCode());
+        }
+
         if ($exception instanceof AuthenticationException) {
             return response()->json([
                 'errors' => [
