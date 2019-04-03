@@ -88,8 +88,8 @@ final class UserController extends Controller
     {
         $data = $this->client
             ->get(
-            // @todo remove hardcoded secret id
-            sprintf('http://microservice_secret_nginx/api/v1/secrets/%s', '0402b520-9873-4abb-a83d-d1c8e612be1c')
+                // @todo remove hardcoded secret id
+                sprintf('http://microservice_secret_nginx/api/v1/secrets/%s', '0402b520-9873-4abb-a83d-d1c8e612be1c')
             )
             ->getBody()
             ->getContents();
