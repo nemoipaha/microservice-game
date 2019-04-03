@@ -17,4 +17,5 @@ $router->group([
     $router->delete('/users/{id}', 'UserController@deleteUser');
     $router->get('/users/{id}/location', 'UserController@getUserCurrentLocation');
     $router->post('/users/{id}/latitude/{latitude}/longitude/{longitude}', 'UserController@changeUserCurrentLocation');
+    $router->get('/users/{id}/wallet', 'UserController@getUserWallet');
 });

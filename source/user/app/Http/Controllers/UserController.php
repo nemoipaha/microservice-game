@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use GuzzleHttp\Client;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -19,6 +20,13 @@ final class UserController extends Controller
             'city' => 'Paris'
         ]
     ];
+
+    private $client;
+
+    public function __construct(Client $client)
+    {
+        $this->client = $client;
+    }
 
     public function getUsersCollection(Request $request): JsonResponse
     {
@@ -74,5 +82,18 @@ final class UserController extends Controller
             'latitude' => $latitude,
             'longitude' => $longitude,
         ]);
+    }
+
+    public function getUserWallet(): JsonResponse
+    {
+        $data = $this->client
+            ->get(
+            // @todo remove hardcoded secret id
+            sprintf('http://microservice_secret_nginx/api/v1/secrets/%s', '0402b520-9873-4abb-a83d-d1c8e612be1c')
+            )
+            ->getBody()
+            ->getContents();
+
+        return response()->json(json_decode($data));
     }
 }
