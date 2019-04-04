@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Jobs\GiftJob;
 use GuzzleHttp\Client;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -42,6 +43,8 @@ final class UserController extends Controller
 
     public function addUser(Request $request): JsonResponse
     {
+        $this->dispatch(new GiftJob());
+
         return response()->json([
             'method' => 'add_user'
         ]);
