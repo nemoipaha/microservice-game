@@ -110,6 +110,7 @@ services:
             - source_location
         links:
             - autodiscovery
+            - microservice_location_redis
         expose:
             - 9000
         environment:
@@ -129,6 +130,16 @@ services:
         ports:
             - 8083:80
             - 9093:9090
+
+    microservice_location_redis:
+        build: ./microservices/location/redis
+        working_dir: /var/www/html
+        links:
+            - autodiscovery
+        expose:
+            - 6379
+        ports:
+            - 6381:6379
 
     source_location:
         image: nginx:stable
