@@ -63,6 +63,7 @@ services:
         links:
             - autodiscovery
             - microservice_secret_nginx
+            - microservice_user_redis
         expose:
             - 9000
         environment:
@@ -82,6 +83,16 @@ services:
         ports:
             - 8082:80
             - 9092:9090
+
+    microservice_user_redis:
+        build: ./microservices/user/redis
+        working_dir: /var/www/html
+        links:
+            - autodiscovery
+        expose:
+            - 6379
+        ports:
+            - 6379:6379
 
     source_user:
         image: nginx:stable
