@@ -4,6 +4,11 @@ declare(strict_types = 1);
 
 namespace App\Http\Controllers;
 
+use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Factory;
+
 final class LocationController
 {
     private const ROUND_DECIMALS = 2;
@@ -11,12 +16,12 @@ final class LocationController
 
     public const MAX_CLOSEST_SECRETS = 3;
 
-    public static $conversionRates = [
+    private static $conversionRates = [
         'km' => 1.853159616,
         'mile' => 1.1515
     ];
 
-    public const CACHE_SECRETS = [
+    private const CACHE_SECRETS = [
         [
             'id' => 100,
             'name' => 'amber',
@@ -64,6 +69,17 @@ final class LocationController
         ]
     ];
 
+    private const DEFAULT_CACHE_TIME = 100;
+
+    private $cache;
+    private $validator;
+
+    public function __construct(Repository $cache, Factory $validator)
+    {
+        $this->cache = $cache;
+        $this->validator = $validator;
+    }
+
     public function getDistance(array $pointA, array $pointB, string $unit = self::KM): float
     {
         return $this->getHaversineDistance($pointA, $pointB, $unit);
@@ -99,13 +115,38 @@ final class LocationController
         return $this->convertDistance($distance, $unit);
     }
 
-    public function getClosestSecrets(array $originPoint): array
+    public function getClosestSecrets(Request $request): JsonResponse
+    {
+        $this->validator->validate($request->all(), [
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+        ]);
+
+        $originPoint = [
+            'latitude' => (float)$request->query('latitude'),
+            'longitude' => (float)$request->query('longitude'),
+        ];
+
+        $cacheKey = sprintf('L%s%s', $originPoint['latitude'], $originPoint['longitude']);
+
+        $data = $this->cache->remember(
+            $cacheKey,
+            self::DEFAULT_CACHE_TIME,
+            function () use($originPoint) {
+                return $this->getClosestSecretsAction($originPoint);
+            }
+        );
+
+        return response()->json($data);
+    }
+
+    private function getClosestSecretsAction(array $originPoint): array
     {
         $preprocessClosure = function(array $item) use($originPoint): float {
             return $this->getHaversineDistance($item['location'], $originPoint);
         };
 
-        $distances = array_map($preprocessClosure, self::CACHE_SECRETS);
+        $distances = array_map($preprocessClosure, $this->loadSecrets());
 
         asort($distances);
 
@@ -121,5 +162,14 @@ final class LocationController
         );
 
         return $secrets;
+    }
+
+    /**
+     * @todo call secrets microservice
+     * @return array
+     */
+    private function loadSecrets(): array
+    {
+        return self::CACHE_SECRETS;
     }
 }
