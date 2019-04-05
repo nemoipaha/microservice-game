@@ -48,12 +48,13 @@ class Handler extends ExceptionHandler
     {
         if ($exception instanceof ValidationException) {
             return response()->json([
-                'errors' => Collection::make($exception->validator->errors()->all())
+                'errors' => Collection::make($exception->validator->errors()->keys())
                     ->map(
-                        function (string $errorMessage) {
+                        function (string $errorKey) use($exception) {
                             return [
-                                'code' => 'invalid_request',
-                                'message' => $errorMessage
+                                'parameter' => $errorKey,
+                                'code' => 'invalid_parameter',
+                                'message' => $exception->validator->errors()->first($errorKey)
                             ];
                         }
                     )
