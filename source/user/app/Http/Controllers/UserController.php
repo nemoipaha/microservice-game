@@ -89,6 +89,7 @@ final class UserController extends Controller
 
     public function getUserWallet(): JsonResponse
     {
+        // @todo refactor to repository and use secret entity
         $data = $this->client
             ->get(
                 // @todo remove hardcoded secret id
