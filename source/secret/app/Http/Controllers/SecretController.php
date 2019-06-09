@@ -7,9 +7,12 @@ namespace App\Http\Controllers;
 use App\Entity\BaseModel;
 use App\Entity\Secret;
 use App\Http\Transformer\SecretTransformer;
+use App\Jobs\TestJob;
+use Illuminate\Contracts\Bus\Dispatcher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use League\Fractal\Manager;
 use League\Fractal\Resource\Collection as FractalCollection;
@@ -69,5 +72,12 @@ final class SecretController extends Controller
         $secret = Secret::query()->create(array_merge($request->all(), ['id' => Str::uuid()]));
 
         return $this->createItemResponse($secret, $this->secretTransformer);
+    }
+
+    public function testQueue(Dispatcher $dispatcher): JsonResponse
+    {
+        $dispatcher->dispatch(new TestJob('wow'));
+
+        return response()->json(null);
     }
 }

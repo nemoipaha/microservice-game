@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Jobs\GiftJob;
+use App\Jobs\TestJob;
 use GuzzleHttp\Client;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Queue\QueueManager;
+use Illuminate\Contracts\Bus\Dispatcher;
 
 final class UserController extends Controller
 {
@@ -99,5 +102,25 @@ final class UserController extends Controller
             ->getContents();
 
         return response()->json(json_decode($data));
+    }
+
+    /**
+     * @todo refactor
+     *
+     * @param Request $request
+     * @param Dispatcher $dispatcher
+     * @return JsonResponse
+     */
+    public function sendQueueMessage(
+        Request $request,
+        Dispatcher $dispatcher
+    ): JsonResponse {
+        $dispatcher->dispatch(new TestJob($request->query('key')));
+
+//        $queueManager = app(QueueManager::class);
+//
+//        $queueManager->connection('sqs')->push(new TestJob($request->query('key')));
+
+        return response()->json(null);
     }
 }
