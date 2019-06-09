@@ -1,8 +1,8 @@
-version: '2'
+version: '3.7'
+
 services:
     autodiscovery:
         build: ./autodiscovery/
-        mem_limit: 128m
         expose:
             - 53
             - 8300
@@ -21,8 +21,8 @@ services:
     microservice_battle_fpm:
         build: ./microservices/battle/php-fpm/
         working_dir: /var/www/html
-        volumes_from:
-            - source_battle
+        volumes:
+            - ./source/battle:/var/www/html
         links:
             - autodiscovery
             - microservice_user_nginx
@@ -34,8 +34,8 @@ services:
 
     microservice_battle_nginx:
         build: ./microservices/battle/nginx/
-        volumes_from:
-            - source_battle
+        volumes:
+            - ./source/battle:/var/www/html
         links:
             - autodiscovery
             - microservice_battle_fpm
@@ -58,8 +58,8 @@ services:
     microservice_user_fpm:
         build: ./microservices/user/php-fpm/
         working_dir: /var/www/html
-        volumes_from:
-            - source_user
+        volumes:
+            - ./source/user:/var/www/html
         links:
             - autodiscovery
             - microservice_secret_nginx
@@ -72,8 +72,8 @@ services:
 
     microservice_user_nginx:
         build: ./microservices/user/nginx/
-        volumes_from:
-            - source_user
+        volumes:
+            - ./source/user:/var/www/html
         links:
             - autodiscovery
             - microservice_user_fpm
@@ -106,8 +106,8 @@ services:
     microservice_location_fpm:
         build: ./microservices/location/php-fpm/
         working_dir: /var/www/html
-        volumes_from:
-            - source_location
+        volumes:
+            - ./source/location:/var/www/html
         links:
             - autodiscovery
             - microservice_location_redis
@@ -119,8 +119,8 @@ services:
 
     microservice_location_nginx:
         build: ./microservices/location/nginx/
-        volumes_from:
-            - source_location
+        volumes:
+            - ./source/location:/var/www/html
         links:
             - autodiscovery
             - microservice_location_fpm
@@ -153,8 +153,8 @@ services:
     microservice_secret_fpm:
         build: ./microservices/secret/php-fpm/
         working_dir: /var/www/html
-        volumes_from:
-            - source_secret
+        volumes:
+            - ./source/secret:/var/www/html
         links:
             - autodiscovery
             - microservice_secret_database
@@ -166,8 +166,8 @@ services:
 
     microservice_secret_nginx:
         build: ./microservices/secret/nginx/
-        volumes_from:
-            - source_secret
+        volumes:
+            - ./source/secret:/var/www/html
         links:
             - autodiscovery
             - microservice_secret_fpm
@@ -194,3 +194,51 @@ services:
         volumes:
             - ./source/secret:/var/www/html
         command: "true"
+
+    ##
+    # Sentry
+    ##
+    sentry_redis:
+        image: redis
+        expose:
+            - 6379
+
+    sentry_postgres:
+        image: postgres
+        environment:
+            - POSTGRES_PASSWORD=sentry
+            - POSTGRES_USER=sentry
+        volumes:
+            - /var/lib/postgresql/data
+        expose:
+            - 5432
+
+    sentry-defaults: &sentry-defaults
+        image: sentry
+        links:
+            - sentry_redis
+            - sentry_postgres
+            - sentry_smtp
+        environment:
+            SENTRY_SECRET_KEY: mymicrosecret
+            SENTRY_POSTGRES_HOST: sentry_postgres
+            SENTRY_REDIS_HOST: sentry_redis
+            SENTRY_DB_USER: sentry
+            SENTRY_DB_PASSWORD: sentry
+            SENTRY_EMAIL_HOST: sentry-smtp
+
+    sentry:
+        <<: *sentry-defaults
+        ports:
+            - 9876:9000
+
+    sentry_smtp:
+        image: tianon/exim4
+
+    sentry_cron:
+        <<: *sentry-defaults
+        command: sentry run cron
+
+    sentry_worker:
+        <<: *sentry-defaults
+        command: sentry run worker
