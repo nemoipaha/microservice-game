@@ -78,6 +78,7 @@ $app->routeMiddleware([
 */
 
 $app->register(App\Providers\AppServiceProvider::class);
+//$app->register(\Illuminate\Log\LogServiceProvider::class);
 $app->register(\Illuminate\Redis\RedisServiceProvider::class);
 $app->register(\Illuminate\Queue\QueueServiceProvider::class);
 $app->register(Sentry\Laravel\ServiceProvider::class);
@@ -105,5 +106,6 @@ $app->router->group([
 $app->configure('app');
 $app->configure('database');
 $app->configure('queue');
+//$app->configure('logging');
 
 return $app;
