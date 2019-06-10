@@ -43,7 +43,7 @@ final class SecretController extends Controller
     {
         Datadogstatsd::configure(self::APM_API_KEY, self::APM_APP_KEY);
 
-        $startTime = microtime();
+        $startTime = microtime(true);
 
         $data = Secret::all();
 
@@ -61,7 +61,7 @@ final class SecretController extends Controller
 
     public function getSecretById(string $id): JsonResponse
     {
-        $secret = Secret::query()->find($id);
+        $secret = Secret::query()->findOrFail($id);
 
         Datadogstatsd::increment(
             'secrets.get-by-id',

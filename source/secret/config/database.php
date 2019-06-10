@@ -2,6 +2,7 @@
 
 return [
     'default' => 'mysql',
+
     'connections' => [
         'mysql' => [
             'driver' => 'mysql',
@@ -11,5 +12,7 @@ return [
             'password' => env('DB_PASSWORD'),
             'collation' => 'utf8_unicode_ci'
         ]
-    ]
+    ],
+
+    'migrations' => 'migrations',
 ];
