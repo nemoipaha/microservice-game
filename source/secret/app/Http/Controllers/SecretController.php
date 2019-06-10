@@ -12,15 +12,18 @@ use Illuminate\Contracts\Bus\Dispatcher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use League\Fractal\Manager;
 use League\Fractal\Resource\Collection as FractalCollection;
 use League\Fractal\Resource\Item;
 use League\Fractal\TransformerAbstract;
+use Datadogstatsd;
 
 final class SecretController extends Controller
 {
+    private const APM_API_KEY = '40cb00c205207c9fcaff5a076fe57f86';
+    private const APM_APP_KEY = '67e59370880697d1b2fdc755cb192d58612d7207';
+
     private $secretTransformer;
     private $manager;
 
@@ -30,9 +33,28 @@ final class SecretController extends Controller
         $this->manager = $manager;
     }
 
+    /**
+     * Apm with datadog test
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function getSecretCollection(Request $request): JsonResponse
     {
+        Datadogstatsd::configure(self::APM_API_KEY, self::APM_APP_KEY);
+
+        $startTime = microtime();
+
         $data = Secret::all();
+
+        Datadogstatsd::timing(
+            'secrets.loading.time',
+            microtime(true) - $startTime,
+            1,
+            [
+                'service' => 'secret'
+            ]
+        );
 
         return $this->createCollectionResponse($data, $this->secretTransformer);
     }
@@ -40,6 +62,14 @@ final class SecretController extends Controller
     public function getSecretById(string $id): JsonResponse
     {
         $secret = Secret::query()->find($id);
+
+        Datadogstatsd::increment(
+            'secrets.get-by-id',
+            1,
+            [
+                'service' => 'secret'
+            ]
+        );
 
         return $this->createItemResponse($secret, $this->secretTransformer);
     }
