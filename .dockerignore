@@ -3,3 +3,4 @@
 .dockerignore
 readme.md
 docker-compose.yml
+/source/*/vendor
