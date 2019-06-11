@@ -18,19 +18,19 @@ use League\Fractal\Resource\Collection as FractalCollection;
 use League\Fractal\Resource\Item;
 use League\Fractal\TransformerAbstract;
 use Datadogstatsd;
+use Illuminate\Contracts\Config\Repository as Config;
 
 final class SecretController extends Controller
 {
-    private const APM_API_KEY = '40cb00c205207c9fcaff5a076fe57f86';
-    private const APM_APP_KEY = '67e59370880697d1b2fdc755cb192d58612d7207';
-
     private $secretTransformer;
     private $manager;
+    private $config;
 
-    public function __construct(SecretTransformer $secretTransformer, Manager $manager)
+    public function __construct(SecretTransformer $secretTransformer, Manager $manager, Config $config)
     {
         $this->secretTransformer = $secretTransformer;
         $this->manager = $manager;
+        $this->config = $config;
     }
 
     /**
@@ -41,7 +41,10 @@ final class SecretController extends Controller
      */
     public function getSecretCollection(Request $request): JsonResponse
     {
-        Datadogstatsd::configure(self::APM_API_KEY, self::APM_APP_KEY);
+        Datadogstatsd::configure(
+            $this->config->get('services.datadog.api_key'),
+            $this->config->get('services.datadog.app_key')
+        );
 
         $startTime = microtime(true);
 
@@ -61,6 +64,11 @@ final class SecretController extends Controller
 
     public function getSecretById(string $id): JsonResponse
     {
+        Datadogstatsd::configure(
+            $this->config->get('services.datadog.api_key'),
+            $this->config->get('services.datadog.app_key')
+        );
+
         $secret = Secret::query()->findOrFail($id);
 
         Datadogstatsd::increment(
