@@ -18,4 +18,6 @@ $router->group([
     $router->get('/users/{id}/location', 'UserController@getUserCurrentLocation');
     $router->post('/users/{id}/latitude/{latitude}/longitude/{longitude}', 'UserController@changeUserCurrentLocation');
     $router->get('/users/{id}/wallet', 'UserController@getUserWallet');
+    // @todo refactor
+    $router->post('/queue/messages', 'UserController@sendQueueMessage');
 });

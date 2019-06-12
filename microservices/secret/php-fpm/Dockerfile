@@ -5,7 +5,7 @@ RUN apt-get update && apt-get -y install \
     && git clone https://github.com/phpredis/phpredis.git /usr/src/php/ext/redis \
     && pecl install mcrypt-1.0.2 \
     && docker-php-ext-enable mcrypt \
-    && docker-php-ext-install curl intl json mbstring pdo pdo_pgsql pdo_mysql redis xml \
+    && docker-php-ext-install curl intl json mbstring pdo pdo_pgsql pdo_mysql redis xml sockets \
     && apt-get autoremove && apt-get autoclean \
     && rm -rf /var/lib/apt/lists/*
 

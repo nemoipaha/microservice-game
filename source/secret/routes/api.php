@@ -8,4 +8,6 @@ $router->group([
     $router->get('/secrets', 'SecretController@getSecretCollection');
     $router->get('/secrets/{id}', 'SecretController@getSecretById');
     $router->post('/secrets', 'SecretController@newSecret');
+    // @todo refactor
+    $router->post('/queue', 'SecretController@testQueue');
 });

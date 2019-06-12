@@ -1,13 +1,39 @@
 FROM php:7-fpm
 
-RUN apt-get update && apt-get -y install \
-        git g++ libcurl4-gnutls-dev libicu-dev libmcrypt-dev libpq-dev libxml2-dev unzip zlib1g-dev \
+RUN apt-get update && apt-get -y --no-install-recommends install \
+    git \
+    g++ \
+    libcurl4-gnutls-dev \
+    libicu-dev \
+    libmcrypt-dev \
+    libpq-dev \
+    libxml2-dev \
+    libzip-dev \
+    libpng-dev \
+    libjpeg-dev \
+    unzip \
+    zlib1g-dev \
+    mysql-client \
     && git clone https://github.com/phpredis/phpredis.git /usr/src/php/ext/redis \
-    && pecl install mcrypt-1.0.2 \
-    && docker-php-ext-enable mcrypt \
-    && docker-php-ext-install curl intl json mbstring pdo pdo_pgsql redis xml \
-    && apt-get autoremove && apt-get autoclean \
+    && docker-php-ext-install intl json pdo_pgsql pdo_mysql redis zip \
+    && docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr \
+    && docker-php-ext-install gd \
+    && apt-get autoremove -y \
+    && apt-get autoclean \
     && rm -rf /var/lib/apt/lists/*
+
+RUN pecl install mcrypt-1.0.2 \
+    && docker-php-ext-enable mcrypt
+
+RUN pecl install xdebug \
+    && rm -rf /tmp/pear \
+    && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)\n" >> /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.remote_enable=on\n" >> /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.remote_autostart=off\n" >> /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.remote_port=9000\n" >> /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.profiler_enable=1\n" >> /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.profiler_output_dir=/var/www/html/tmp\n" >> /usr/local/etc/php/conf.d/xdebug.ini
+#    && echo "xdebug.profiler_enable_trigger=on\n" >> /usr/local/etc/php/conf.d/xdebug.ini
 
 RUN echo 'date.timezone="Europe/Madrid"' >>  /usr/local/etc/php/conf.d/date.ini
 RUN echo 'session.save_path = "/tmp"' >>  /usr/local/etc/php/conf.d/session.ini
@@ -40,6 +66,8 @@ RUN curl -sSL https://getcomposer.org/installer | php -- --install-dir=/usr/bin/
 
 RUN curl -sSL https://phar.phpunit.de/phpunit.phar -o /usr/bin/phpunit && chmod +x /usr/bin/phpunit
 
+ADD ./config/php.ini /usr/local/etc/php/
+
 CMD [ "/usr/local/bin/containerpilot", \
     "php-fpm", \
-        "--nodaemonize"]
+    "--nodaemonize"]

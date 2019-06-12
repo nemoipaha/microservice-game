@@ -7,6 +7,8 @@ namespace App\Http\Controllers;
 use App\Entity\BaseModel;
 use App\Entity\Secret;
 use App\Http\Transformer\SecretTransformer;
+use App\Jobs\TestJob;
+use Illuminate\Contracts\Bus\Dispatcher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -15,28 +17,67 @@ use League\Fractal\Manager;
 use League\Fractal\Resource\Collection as FractalCollection;
 use League\Fractal\Resource\Item;
 use League\Fractal\TransformerAbstract;
+use Datadogstatsd;
+use Illuminate\Contracts\Config\Repository as Config;
 
 final class SecretController extends Controller
 {
     private $secretTransformer;
     private $manager;
+    private $config;
 
-    public function __construct(SecretTransformer $secretTransformer, Manager $manager)
+    public function __construct(SecretTransformer $secretTransformer, Manager $manager, Config $config)
     {
         $this->secretTransformer = $secretTransformer;
         $this->manager = $manager;
+        $this->config = $config;
     }
 
+    /**
+     * Apm with datadog test
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function getSecretCollection(Request $request): JsonResponse
     {
+        Datadogstatsd::configure(
+            $this->config->get('services.datadog.api_key'),
+            $this->config->get('services.datadog.app_key')
+        );
+
+        $startTime = microtime(true);
+
         $data = Secret::all();
+
+        Datadogstatsd::timing(
+            'secrets.loading.time',
+            microtime(true) - $startTime,
+            1,
+            [
+                'service' => 'secret'
+            ]
+        );
 
         return $this->createCollectionResponse($data, $this->secretTransformer);
     }
 
     public function getSecretById(string $id): JsonResponse
     {
-        $secret = Secret::query()->find($id);
+        Datadogstatsd::configure(
+            $this->config->get('services.datadog.api_key'),
+            $this->config->get('services.datadog.app_key')
+        );
+
+        $secret = Secret::query()->findOrFail($id);
+
+        Datadogstatsd::increment(
+            'secrets.get-by-id',
+            1,
+            [
+                'service' => 'secret'
+            ]
+        );
 
         return $this->createItemResponse($secret, $this->secretTransformer);
     }
@@ -69,5 +110,12 @@ final class SecretController extends Controller
         $secret = Secret::query()->create(array_merge($request->all(), ['id' => Str::uuid()]));
 
         return $this->createItemResponse($secret, $this->secretTransformer);
+    }
+
+    public function testQueue(Dispatcher $dispatcher): JsonResponse
+    {
+        $dispatcher->dispatch(new TestJob('wow'));
+
+        return response()->json(null);
     }
 }
