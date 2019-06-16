@@ -17,7 +17,7 @@ use League\Fractal\Manager;
 use League\Fractal\Resource\Collection as FractalCollection;
 use League\Fractal\Resource\Item;
 use League\Fractal\TransformerAbstract;
-use Datadogstatsd;
+use DataDog\DogStatsd;
 use Illuminate\Contracts\Config\Repository as Config;
 
 final class SecretController extends Controller
@@ -25,12 +25,18 @@ final class SecretController extends Controller
     private $secretTransformer;
     private $manager;
     private $config;
+    private $dogStatsd;
 
-    public function __construct(SecretTransformer $secretTransformer, Manager $manager, Config $config)
-    {
+    public function __construct(
+        SecretTransformer $secretTransformer,
+        Manager $manager,
+        Config $config,
+        DogStatsd $dogStatsd
+    ) {
         $this->secretTransformer = $secretTransformer;
         $this->manager = $manager;
         $this->config = $config;
+        $this->dogStatsd = $dogStatsd;
     }
 
     /**
@@ -41,16 +47,18 @@ final class SecretController extends Controller
      */
     public function getSecretCollection(Request $request): JsonResponse
     {
-        Datadogstatsd::configure(
-            $this->config->get('services.datadog.api_key'),
-            $this->config->get('services.datadog.app_key')
+        $this->dogStatsd->event(
+            'pasha.test',
+            [
+                'key' => 123
+            ]
         );
 
         $startTime = microtime(true);
 
         $data = Secret::all();
 
-        Datadogstatsd::timing(
+        $this->dogStatsd->microtiming(
             'secrets.loading.time',
             microtime(true) - $startTime,
             1,
@@ -64,14 +72,9 @@ final class SecretController extends Controller
 
     public function getSecretById(string $id): JsonResponse
     {
-        Datadogstatsd::configure(
-            $this->config->get('services.datadog.api_key'),
-            $this->config->get('services.datadog.app_key')
-        );
-
         $secret = Secret::query()->findOrFail($id);
 
-        Datadogstatsd::increment(
+        $this->dogStatsd->increment(
             'secrets.get-by-id',
             1,
             [
