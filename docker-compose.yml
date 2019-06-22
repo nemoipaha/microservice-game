@@ -198,22 +198,7 @@ services:
     ##
     # Sentry
     ##
-    sentry_redis:
-        image: redis
-        expose:
-            - 6379
-
-    sentry_postgres:
-        image: postgres
-        environment:
-            - POSTGRES_PASSWORD=sentry
-            - POSTGRES_USER=sentry
-        volumes:
-            - /var/lib/postgresql/data
-        expose:
-            - 5432
-
-    sentry-defaults: &sentry-defaults
+    sentry_defaults: &sentry_defaults
         image: sentry
         links:
             - sentry_redis
@@ -225,23 +210,36 @@ services:
             SENTRY_REDIS_HOST: sentry_redis
             SENTRY_DB_USER: sentry
             SENTRY_DB_PASSWORD: sentry
-            SENTRY_EMAIL_HOST: sentry-smtp
+            SENTRY_EMAIL_HOST: sentry_smtp
 
-    sentry:
-        <<: *sentry-defaults
+    sentry_web:
+        <<: *sentry_defaults
         ports:
             - 9876:9000
+
+    sentry_cron:
+        <<: *sentry_defaults
+        command: sentry run cron
+
+    sentry_worker:
+        <<: *sentry_defaults
+        command: sentry run worker
+
+    sentry_redis:
+        image: redis
+        expose:
+            - 6379
 
     sentry_smtp:
         image: tianon/exim4
 
-    sentry_cron:
-        <<: *sentry-defaults
-        command: sentry run cron
-
-    sentry_worker:
-        <<: *sentry-defaults
-        command: sentry run worker
+    sentry_postgres:
+        image: postgres
+        environment:
+            - POSTGRES_PASSWORD=sentry
+            - POSTGRES_USER=sentry
+        expose:
+            - 5432
 
     ##
     # Telemetry: prometheus
