@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Queue\QueueManager;
 use Illuminate\Contracts\Bus\Dispatcher;
+use Psr\Log\LoggerInterface;
 
 final class UserController extends Controller
 {
@@ -39,8 +40,13 @@ final class UserController extends Controller
         ]);
     }
 
-    public function getSingleUser(string $id, Request $request): JsonResponse
+    /**
+     * Test sentry logs
+     */
+    public function getSingleUser(string $id, Request $request, LoggerInterface $logger): JsonResponse
     {
+        $logger->debug('debug', ['key' => 'privet']);
+
         return response()->json($this->users[$id]);
     }
 
