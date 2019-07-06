@@ -35,8 +35,16 @@ http {
 
     server {
         listen 80 default_server;
+        listen 443 ssl;
+
+        ssl on;
+        ssl_certificate /etc/nginx/server-cert.pem;
+        ssl_certificate_key /etc/nginx/server-key.pem;
+
         server_name _;
+
         root /var/www/html/public;
+
         index index.php index.html;
 
         charset utf-8;
