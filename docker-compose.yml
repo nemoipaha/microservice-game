@@ -44,6 +44,7 @@ services:
             - CONSUL=autodiscovery
         ports:
             - 8081:80
+            - 8443:443
             - 9091:9090
 
     source_battle:
