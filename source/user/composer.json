@@ -14,6 +14,7 @@
         "laravel/lumen-framework": "5.8.*",
         "predis/predis": "^1.1",
         "sentry/sentry-laravel": "1.0.2",
+        "tymon/jwt-auth": "^1.0@dev",
         "vlucas/phpdotenv": "^3.3"
     },
     "require-dev": {
