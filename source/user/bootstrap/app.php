@@ -23,7 +23,7 @@ $app = new Laravel\Lumen\Application(
 
 // $app->withFacades();
 
-// $app->withEloquent();
+$app->withEloquent();
 
 /*
 |--------------------------------------------------------------------------
@@ -57,10 +57,6 @@ $app->singleton(
 |
 */
 
-$app->middleware([
-    App\Http\Middleware\CheckApiKey::class
-]);
-
 $app->routeMiddleware([
     'auth' => App\Http\Middleware\Authenticate::class,
     'has_api_key' => App\Http\Middleware\CheckApiKey::class,
@@ -82,7 +78,9 @@ $app->register(App\Providers\AppServiceProvider::class);
 $app->register(\Illuminate\Redis\RedisServiceProvider::class);
 $app->register(\Illuminate\Queue\QueueServiceProvider::class);
 $app->register(Sentry\Laravel\ServiceProvider::class);
-//$app->register(App\Providers\AuthServiceProvider::class);
+$app->register(App\Providers\AuthServiceProvider::class);
+$app->register(\Tymon\JWTAuth\Providers\LumenServiceProvider::class);
+$app->register(\Laravel\Tinker\TinkerServiceProvider::class);
 //$app->register(App\Providers\EventServiceProvider::class);
 
 /*
