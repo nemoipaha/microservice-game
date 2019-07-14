@@ -21,8 +21,7 @@ $app = new Laravel\Lumen\Application(
     dirname(__DIR__)
 );
 
-// $app->withFacades();
-
+$app->withFacades();
 $app->withEloquent();
 
 /*
@@ -74,13 +73,15 @@ $app->routeMiddleware([
 */
 
 $app->register(App\Providers\AppServiceProvider::class);
-//$app->register(\Illuminate\Log\LogServiceProvider::class);
 $app->register(\Illuminate\Redis\RedisServiceProvider::class);
 $app->register(\Illuminate\Queue\QueueServiceProvider::class);
 $app->register(Sentry\Laravel\ServiceProvider::class);
 $app->register(App\Providers\AuthServiceProvider::class);
 $app->register(\Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 $app->register(\Laravel\Tinker\TinkerServiceProvider::class);
+$app->register(\Laravel\Passport\PassportServiceProvider::class);
+$app->register(Dusterio\LumenPassport\PassportServiceProvider::class);
+//$app->register(\Illuminate\Log\LogServiceProvider::class);
 //$app->register(App\Providers\EventServiceProvider::class);
 
 /*
@@ -105,5 +106,6 @@ $app->configure('app');
 $app->configure('database');
 $app->configure('queue');
 $app->configure('logging');
+$app->configure('auth');
 
 return $app;

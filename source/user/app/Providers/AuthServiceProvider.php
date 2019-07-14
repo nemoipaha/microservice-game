@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\User;
+use Dusterio\LumenPassport\LumenPassport;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -35,5 +36,7 @@ class AuthServiceProvider extends ServiceProvider
                 return User::where('api_token', $request->input('api_token'))->first();
             }
         });
+
+        LumenPassport::routes($this->app, ['prefix' => 'v1/oauth']);
     }
 }
