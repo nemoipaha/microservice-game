@@ -1,7 +1,9 @@
 /vendor
 /.idea
+.vscode
 Homestead.json
 Homestead.yaml
 .env
 
 /tmp
+/storage/*.key

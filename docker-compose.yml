@@ -65,6 +65,7 @@ services:
             - autodiscovery
             - microservice_secret_nginx
             - microservice_user_redis
+            - microservice_user_database
         expose:
             - 9000
         environment:
@@ -94,6 +95,17 @@ services:
             - 6379
         ports:
             - 6380:6379
+
+    microservice_user_database:
+        build: ./microservices/user/database
+        environment:
+            - CONSUL=autodiscovery
+            - MYSQL_ROOT_PASSWORD=mysecret
+            - MYSQL_DATABASE=finding_users
+            - MYSQL_USER=secret
+            - MYSQL_PASSWORD=mysecret
+        ports:
+            - 6667:3306
 
     source_user:
         image: nginx:stable

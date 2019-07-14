@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\User;
-use Illuminate\Support\Facades\Gate;
+use Carbon\Carbon;
+use Dusterio\LumenPassport\LumenPassport;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Passport\Passport;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -35,5 +37,21 @@ class AuthServiceProvider extends ServiceProvider
                 return User::where('api_token', $request->input('api_token'))->first();
             }
         });
+
+        LumenPassport::routes($this->app, ['prefix' => 'api/v1/oauth']);
+
+        Passport::personalAccessClientId($this->app['config']->get('passport.personal_access_client_id'));
+
+        Passport::tokensCan([
+            'show-users' => 'See users',
+            'edit-users' => 'Update users',
+            'super-admin' => 'Super admin'
+        ]);
+
+        Passport::tokensExpireIn(Carbon::now()->addHour());
+
+        Passport::refreshTokensExpireIn(Carbon::now()->addDays(30));
+
+        Passport::personalAccessTokensExpireIn(Carbon::now()->addMonths(6));
     }
 }
