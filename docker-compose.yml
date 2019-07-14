@@ -1,8 +1,8 @@
-version: '2'
+version: '3.7'
+
 services:
     autodiscovery:
         build: ./autodiscovery/
-        mem_limit: 128m
         expose:
             - 53
             - 8300
@@ -15,24 +15,264 @@ services:
         dns:
             - 127.0.0.1
 
-    microservice_base_fpm:
-        build: ./microservices/base/php-fpm/
+    ##
+    # Battle Microservice
+    ##
+    microservice_battle_fpm:
+        build: ./microservices/battle/php-fpm/
+        working_dir: /var/www/html
+        volumes:
+            - ./source/battle:/var/www/html
         links:
             - autodiscovery
+            - microservice_user_nginx
         expose:
             - 9000
         environment:
-            - BACKEND=microservice_base_nginx
+            - BACKEND=microservice_battle_nginx
             - CONSUL=autodiscovery
 
-    microservice_base_nginx:
-        build: ./microservices/base/nginx/
+    microservice_battle_nginx:
+        build: ./microservices/battle/nginx/
+        volumes:
+            - ./source/battle:/var/www/html
         links:
             - autodiscovery
-            - microservice_base_fpm
+            - microservice_battle_fpm
         environment:
-            - BACKEND=microservice_base_fpm
+            - BACKEND=microservice_battle_fpm
             - CONSUL=autodiscovery
         ports:
-            - 8080:80
+            - 8081:80
+            - 8443:443
+            - 9091:9090
+
+    source_battle:
+        image: nginx:stable
+        volumes:
+            - ./source/battle:/var/www/html
+        command: "true"
+
+    ##
+    # User Microservice
+    ##
+    microservice_user_fpm:
+        build: ./microservices/user/php-fpm/
+        working_dir: /var/www/html
+        volumes:
+            - ./source/user:/var/www/html
+        links:
+            - autodiscovery
+            - microservice_secret_nginx
+            - microservice_user_redis
+            - microservice_user_database
+        expose:
+            - 9000
+        environment:
+            - BACKEND=microservice_user_nginx
+            - CONSUL=autodiscovery
+
+    microservice_user_nginx:
+        build: ./microservices/user/nginx/
+        volumes:
+            - ./source/user:/var/www/html
+        links:
+            - autodiscovery
+            - microservice_user_fpm
+        environment:
+            - BACKEND=microservice_user_fpm
+            - CONSUL=autodiscovery
+        ports:
+            - 8082:80
+            - 9092:9090
+
+    microservice_user_redis:
+        build: ./microservices/user/redis
+        working_dir: /var/www/html
+        links:
+            - autodiscovery
+        expose:
+            - 6379
+        ports:
+            - 6380:6379
+
+    microservice_user_database:
+        build: ./microservices/user/database
+        environment:
+            - CONSUL=autodiscovery
+            - MYSQL_ROOT_PASSWORD=mysecret
+            - MYSQL_DATABASE=finding_users
+            - MYSQL_USER=secret
+            - MYSQL_PASSWORD=mysecret
+        ports:
+            - 6667:3306
+
+    source_user:
+        image: nginx:stable
+        volumes:
+            - ./source/user:/var/www/html
+        command: "true"
+
+    ##
+    # Location Microservice
+    ##
+    microservice_location_fpm:
+        build: ./microservices/location/php-fpm/
+        working_dir: /var/www/html
+        volumes:
+            - ./source/location:/var/www/html
+        links:
+            - autodiscovery
+            - microservice_location_redis
+        expose:
+            - 9000
+        environment:
+            - BACKEND=microservice_location_nginx
+            - CONSUL=autodiscovery
+
+    microservice_location_nginx:
+        build: ./microservices/location/nginx/
+        volumes:
+            - ./source/location:/var/www/html
+        links:
+            - autodiscovery
+            - microservice_location_fpm
+        environment:
+            - BACKEND=microservice_location_fpm
+            - CONSUL=autodiscovery
+        ports:
+            - 8083:80
+            - 9093:9090
+
+    microservice_location_redis:
+        build: ./microservices/location/redis
+        working_dir: /var/www/html
+        links:
+            - autodiscovery
+        expose:
+            - 6379
+        ports:
+            - 6381:6379
+
+    source_location:
+        image: nginx:stable
+        volumes:
+            - ./source/location:/var/www/html
+        command: "true"
+
+    ##
+    # Secret Microservice
+    ##
+    microservice_secret_fpm:
+        build: ./microservices/secret/php-fpm/
+        working_dir: /var/www/html
+        volumes:
+            - ./source/secret:/var/www/html
+        links:
+            - autodiscovery
+            - microservice_secret_database
+        expose:
+            - 9000
+        environment:
+            - BACKEND=microservice_secret_nginx
+            - CONSUL=autodiscovery
+
+    microservice_secret_nginx:
+        build: ./microservices/secret/nginx/
+        volumes:
+            - ./source/secret:/var/www/html
+        links:
+            - autodiscovery
+            - microservice_secret_fpm
+        environment:
+            - BACKEND=microservice_secret_fpm
+            - CONSUL=autodiscovery
+        ports:
+            - 8084:80
+            - 9094:9090
+
+    microservice_secret_database:
+        build: ./microservices/secret/database
+        environment:
+            - CONSUL=autodiscovery
+            - MYSQL_ROOT_PASSWORD=mysecret
+            - MYSQL_DATABASE=finding_secrets
+            - MYSQL_USER=secret
+            - MYSQL_PASSWORD=mysecret
+        ports:
+          - 6666:3306
+
+    microservice_secret_database_mariadb:
+        build: ./microservices/secret/mariadb
+        environment:
+            - CONSUL=autodiscovery
+            - MYSQL_ROOT_PASSWORD=mysecret
+            - MYSQL_DATABASE=finding_secrets
+            - MYSQL_USER=secret
+            - MYSQL_PASSWORD=mysecret
+        ports:
+            - 7777:3306
+
+    source_secret:
+        image: nginx:stable
+        volumes:
+            - ./source/secret:/var/www/html
+        command: "true"
+
+    ##
+    # Sentry
+    ##
+    sentry_defaults: &sentry_defaults
+        image: sentry
+        links:
+            - sentry_redis
+            - sentry_postgres
+            - sentry_smtp
+        environment:
+            SENTRY_SECRET_KEY: mymicrosecret
+            SENTRY_POSTGRES_HOST: sentry_postgres
+            SENTRY_REDIS_HOST: sentry_redis
+            SENTRY_DB_USER: sentry
+            SENTRY_DB_PASSWORD: sentry
+            SENTRY_EMAIL_HOST: sentry_smtp
+
+    sentry_web:
+        <<: *sentry_defaults
+        ports:
+            - 9876:9000
+
+    sentry_cron:
+        <<: *sentry_defaults
+        command: sentry run cron
+
+    sentry_worker:
+        <<: *sentry_defaults
+        command: sentry run worker
+
+    sentry_redis:
+        image: redis
+        expose:
+            - 6379
+
+    sentry_smtp:
+        image: tianon/exim4
+
+    sentry_postgres:
+        image: postgres
+        environment:
+            - POSTGRES_PASSWORD=sentry
+            - POSTGRES_USER=sentry
+        expose:
+            - 5432
+
+    ##
+    # Telemetry: prometheus
+    ##
+    telemetry:
+        build: ./telemetry/
+        links:
+            - autodiscovery
+        expose:
+            - 9090
+        ports:
             - 9090:9090
