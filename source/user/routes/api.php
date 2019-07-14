@@ -29,9 +29,23 @@ $router->group([
     $router->post('/auth/login', 'AuthController@signIn');
 
     $router->group([
-        // jwt auth
-        'middleware' => 'auth'
+        // jwt
+        'middleware' => 'auth:api-jwt'
     ], function(Router $router) {
         $router->get('/users/me', 'AuthController@getAuthenticatedUser');
+    });
+
+    $router->group([
+        // oauth2
+        'middleware' => 'auth'
+    ], function(Router $router) {
+        $router->get('/oauth-data', 'OAuthController@getData');
+        $router->get(
+            '/oauth-data-scoped',
+            [
+                'middleware' => 'scopes:super-admin',
+                'uses' => 'OAuthController@getData'
+            ],
+        );
     });
 });

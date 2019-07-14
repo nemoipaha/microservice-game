@@ -59,6 +59,9 @@ $app->singleton(
 $app->routeMiddleware([
     'auth' => App\Http\Middleware\Authenticate::class,
     'has_api_key' => App\Http\Middleware\CheckApiKey::class,
+    'scopes' => \Laravel\Passport\Http\Middleware\CheckScopes::class,
+    'scope-any' => \Laravel\Passport\Http\Middleware\CheckForAnyScope::class,
+    'client' => \Laravel\Passport\Http\Middleware\CheckClientCredentials::class,
 ]);
 
 /*
@@ -107,5 +110,6 @@ $app->configure('database');
 $app->configure('queue');
 $app->configure('logging');
 $app->configure('auth');
+$app->configure('passport');
 
 return $app;
