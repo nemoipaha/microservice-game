@@ -1,0 +1,1 @@
+alter table secrets encryption = 'y';
